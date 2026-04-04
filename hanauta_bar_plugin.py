@@ -18,27 +18,18 @@ SETTINGS_FILE = (
 )
 
 
-def _theme_choice() -> str:
+def _prefer_color_widget_icons() -> bool:
     try:
         payload = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
     except Exception:
-        return "dark"
-    appearance = payload.get("appearance", {}) if isinstance(payload, dict) else {}
-    appearance = appearance if isinstance(appearance, dict) else {}
-    if bool(appearance.get("use_matugen_palette", False)):
-        return "wallpaper_aware"
-    choice = str(appearance.get("theme_choice", "")).strip().lower()
-    if choice == "wallpaper-aware":
-        return "wallpaper_aware"
-    if choice:
-        return choice
-    fallback = str(appearance.get("theme_mode", "dark")).strip().lower()
-    return fallback if fallback else "dark"
+        return False
+    bar = payload.get("bar", {}) if isinstance(payload, dict) else {}
+    bar = bar if isinstance(bar, dict) else {}
+    return bool(bar.get("use_color_widget_icons", False))
 
 
 def _pick_bar_icon(plugin_dir: Path) -> Path | None:
-    theme = _theme_choice()
-    use_color = theme in {"dark", "light", "custom"}
+    use_color = _prefer_color_widget_icons()
     candidates = (
         [
             plugin_dir / "assets" / "icon_color.svg",
@@ -50,8 +41,6 @@ def _pick_bar_icon(plugin_dir: Path) -> Path | None:
         else [
             plugin_dir / "assets" / "icon.svg",
             plugin_dir / "icon.svg",
-            plugin_dir / "assets" / "icon_color.svg",
-            plugin_dir / "icon_color.svg",
         ]
     )
     for path in candidates:
