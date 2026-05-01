@@ -304,6 +304,8 @@ class DevotionRow(QFrame):
         self.material_font = material_font
         self.ui_font = ui_font
         self.accent = accent
+        self._inactive_name_color = "rgba(255,255,255,0.90)"
+        self._inactive_time_color = "rgba(255,255,255,0.60)"
         self.setObjectName("devotionRow")
         self.setMinimumHeight(DEVOTION_ROW_MIN_HEIGHT)
 
@@ -337,11 +339,15 @@ class DevotionRow(QFrame):
     def set_accent(self, accent: str) -> None:
         self.accent = accent
 
+    def set_theme_colors(self, *, inactive_name: str, inactive_time: str) -> None:
+        self._inactive_name_color = inactive_name or self._inactive_name_color
+        self._inactive_time_color = inactive_time or self._inactive_time_color
+
     def set_active(self, active: bool) -> None:
         bg = rgba(self.accent, 0.14) if active else "transparent"
         border = rgba(self.accent, 0.30) if active else "transparent"
-        name_color = self.accent if active else "rgba(255,255,255,0.90)"
-        time_color = self.accent if active else "rgba(255,255,255,0.60)"
+        name_color = self.accent if active else self._inactive_name_color
+        time_color = self.accent if active else self._inactive_time_color
         self.setStyleSheet(
             f"""
             QFrame#devotionRow {{
@@ -752,6 +758,7 @@ class ChristianDevotionWidget(QWidget):
         self.tracker_progress.apply_theme(rgba(theme.on_surface_variant, 0.16), theme.primary)
         for index, row in enumerate(self.rows):
             row.set_accent(self._slot_accent(index))
+            row.set_theme_colors(inactive_name=theme.text, inactive_time=theme.text_muted)
 
     def _apply_window_effects(self) -> None:
         shadow = QGraphicsDropShadowEffect(self)
